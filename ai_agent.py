@@ -7,15 +7,18 @@ import os
 import json
 import httpx
 from typing import Dict, Any, List
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load .env file if it exists (for local development)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
-# API Configuration from .env
-BASE_URL = os.getenv("ANTHROPIC_BASE_URL", "https://api.anthropic.com")
-API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
+# API Configuration - works with both .env file and HuggingFace Secrets
+BASE_URL = os.environ.get("ANTHROPIC_BASE_URL", "https://api.anthropic.com")
+API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
 
 
 async def call_ai(prompt: str, system: str = "") -> str:
