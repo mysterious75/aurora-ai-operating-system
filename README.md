@@ -45,9 +45,11 @@ An AI-powered dashboard that connects to Odoo ERP data, analyzes business metric
 3. **Prioritization** — Actions ranked by business impact
 4. **Dashboard** — Visual summary for quick decision-making
 
-## Demo
+## 🚀 Live Demo
 
-[Live Demo on HuggingFace Spaces](https://huggingface.co/spaces/mysterious75/aurora-ai-os)
+**[👉 Open Aurora AI Dashboard](https://vora-sonnet-aurora-ai-os.hf.space)**
+
+[![HuggingFace Spaces](https://img.shields.io/badge/HuggingFace-Spaces-blue?logo=huggingface)](https://vora-sonnet-aurora-ai-os.hf.space)
 
 ## Portfolio
 
