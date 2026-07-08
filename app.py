@@ -244,21 +244,29 @@ if question := st.chat_input("Example: Which products should I restock first?"):
 
 # Quick questions
 st.markdown("### 💡 Try asking:")
+
+def ask_quick_question(question):
+    """Handle quick question button click"""
+    st.session_state.chat_history.append({"role": "user", "content": question})
+    with st.spinner("🤔 Thinking..."):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        response = loop.run_until_complete(chat_with_agent(question, data))
+        loop.close()
+    st.session_state.chat_history.append({"role": "assistant", "content": response})
+    st.rerun()
+
 col1, col2 = st.columns(2)
 with col1:
-    if st.button("What products are running low?"):
-        st.session_state.chat_history.append({"role": "user", "content": "What products are running low?"})
-        st.rerun()
-    if st.button("Which customers owe us the most?"):
-        st.session_state.chat_history.append({"role": "user", "content": "Which customers owe us the most?"})
-        st.rerun()
+    if st.button("📦 What products are running low?"):
+        ask_quick_question("What products are running low?")
+    if st.button("💳 Which customers owe us the most?"):
+        ask_quick_question("Which customers owe us the most?")
 with col2:
-    if st.button("What should I focus on today?"):
-        st.session_state.chat_history.append({"role": "user", "content": "What should I focus on today?"})
-        st.rerun()
-    if st.button("How can we increase sales?"):
-        st.session_state.chat_history.append({"role": "user", "content": "How can we increase sales?"})
-        st.rerun()
+    if st.button("🎯 What should I focus on today?"):
+        ask_quick_question("What should I focus on today?")
+    if st.button("💰 How can we increase sales?"):
+        ask_quick_question("How can we increase sales?")
 
 st.markdown("---")
 
