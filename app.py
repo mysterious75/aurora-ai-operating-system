@@ -528,14 +528,14 @@ def ask_quick_question(question):
 col1, col2 = st.columns(2)
 with col1:
     if st.button("📦 Which products are currently running low in warehouse?"):
-        ask_quick_question("What products are running low?")
+        ask_quick_question("Which products are currently running low in warehouse?")
     if st.button("💳 List outstanding customer accounts sorted by risk."):
-        ask_quick_question("Which customers owe us the most?")
+        ask_quick_question("List outstanding customer accounts sorted by risk.")
 with col2:
     if st.button("🎯 Outline operations priorities for MD today."):
-        ask_quick_question("What should I focus on today?")
+        ask_quick_question("Outline operations priorities for MD today.")
     if st.button("💰 Propose sales strategies to increase gross margins."):
-        ask_quick_question("How can we increase sales?")
+        ask_quick_question("Propose sales strategies to increase gross margins.")
 
 st.markdown("---")
 

@@ -89,7 +89,7 @@ def local_fallback_analysis(data: Dict[str, Any]) -> Dict[str, Any]:
             "action": f"Reorder urgent out-of-stock items: {', '.join(out_of_stock[:2])} to fulfill pending draft orders.",
             "impact": "HIGH",
             "effort": "Low",
-            "owner": "Purchasing Manager"
+            "owner": "Procurement Manager"
         })
         rank += 1
         
@@ -185,8 +185,8 @@ def local_fallback_chat(question: str, context: Dict[str, Any]) -> str:
     out_of_stock = [p for p in products if p["stock"] == 0]
     low_stock = [p for p in products if 0 < p["stock"] < p["min_stock"]]
     
-    if any(k in q_lower for k in ["stock", "product", "item", "inventory", "restock", "running low"]):
-        # Inventory question
+    # 1. Check for stock / inventory / warehouse / running low questions
+    if any(k in q_lower for k in ["stock", "product", "item", "inventory", "warehouse", "running low", "restock"]):
         response_parts = ["### ?? Current Inventory Insights (Local Analysis)"]
         
         if out_of_stock:
@@ -202,8 +202,8 @@ def local_fallback_chat(question: str, context: Dict[str, Any]) -> str:
         response_parts.append("\n*Recommendation: Replenish accessories first to ensure desk package sales are not delayed.*")
         return "\n".join(response_parts)
         
-    elif any(k in q_lower for k in ["owe", "money", "customer", "debt", "receivable", "credit", "balance"]):
-        # Financial / receivables question
+    # 2. Check for customer / debt / receivables / outstanding accounts / risk questions
+    elif any(k in q_lower for k in ["owe", "money", "customer", "debt", "receivable", "credit", "balance", "outstanding", "risk"]):
         response_parts = ["### ?? Outstanding Accounts & Credit Utilization"]
         response_parts.append("Here are the accounts with the highest credit limit utilization:\n")
         
@@ -214,8 +214,8 @@ def local_fallback_chat(question: str, context: Dict[str, Any]) -> str:
         response_parts.append("\n*Action Advice: Contact Tuggeranong Office Solutions and Brindabella Business Park immediately for payment before extending additional credit.*")
         return "\n".join(response_parts)
         
-    elif any(k in q_lower for k in ["focus", "today", "do first", "priority", "action", "task"]):
-        # Priorities question
+    # 3. Check for focus / today / priorities / action / MD priorities questions
+    elif any(k in q_lower for k in ["focus", "today", "do first", "priority", "priorities", "action", "task", "operations priorities"]):
         debtors = [r["customer"] for r in receivables if r["risk"] == "HIGH"]
         focus_items = [
             f"1. **Restock Out-of-Stock Items**: Reorder the `{', '.join([p['name'] for p in out_of_stock])}` which are blocking draft orders.",
@@ -225,8 +225,8 @@ def local_fallback_chat(question: str, context: Dict[str, Any]) -> str:
         ]
         return "### ?? Recommended Priorities for Today\n\n" + "\n".join(focus_items)
         
-    elif any(k in q_lower for k in ["sales", "revenue", "increase", "profit", "money", "selling"]):
-        # Sales and marketing question
+    # 4. Check for sales / revenue / increase / margins / strategies questions
+    elif any(k in q_lower for k in ["sales", "revenue", "increase", "profit", "money", "selling", "strategies", "margins"]):
         overstocked = [p["name"] for p in products if p["stock"] > p["min_stock"] * 3.5]
         response_parts = [
             "### ?? Revenue Optimization & Sales Strategies",
@@ -293,15 +293,15 @@ PRODUCTS: {len(data['products'])} total, {len([p for p in data['products'] if p[
 
 Return this exact JSON structure:
 {{
-  "executive_summary": "2 sentence summary for Managing Director",
-  "priority_actions": [
-    {{"rank": 1, "action": "Action text", "impact": "HIGH", "effort": "Low/Medium/High", "owner": "Role"}}
+  \"executive_summary\": \"2 sentence summary for Managing Director\",
+  \"priority_actions\": [
+    {{\"rank\": 1, \"action\": \"Action text\", \"impact\": \"HIGH\", \"effort\": \"Low/Medium/High\", \"owner\": \"Role\"}}
   ],
-  "risks": [
-    {{"type": "Risk type", "description": "Description", "severity": "HIGH", "mitigation": "How to fix"}}
+  \"risks\": [
+    {{\"type\": \"Risk type\", \"description\": \"Description\", \"severity\": \"HIGH\", \"mitigation\": \"How to fix\"}}
   ],
-  "opportunities": [
-    {{"type": "Opportunity", "description": "Description", "potential_value": "Value", "timeline": "Timeline"}}
+  \"opportunities\": [
+    {{\"type\": \"Opportunity\", \"description\": \"Description\", \"potential_value\": \"Value\", \"timeline\": \"Timeline\"}}
   ]
 }}"""
 
