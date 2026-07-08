@@ -12,279 +12,120 @@ from ai_agent import analyze_business_data, chat_with_agent
 
 # Page config
 st.set_page_config(
-    page_title="Aurora AI - Operations Dashboard",
-    page_icon="🏢",
+    page_title="Aurora Office Furniture — AI Operations System",
+    page_icon="🌿",
     layout="wide"
 )
 
-# Custom Design System - Slate Dark / Classic Corporate Theme CSS
+# Aurora Brand CSS — matches auroraofficefurniture.com.au
 st.markdown("""
 <style>
-    /* Import Premium Typography */
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-    /* Global reset for container text */
     .stApp {
-        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
-        background-color: #0B0F19;
-        color: #F8FAFC;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        background-color: #f8f9fa !important;
+        color: #35383b !important;
     }
+    .block-container { padding-top: 0 !important; max-width: 1200px; }
 
-    /* Style titles and subheaders */
     h1, h2, h3, h4, h5, h6 {
-        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-family: 'Inter', sans-serif !important;
         font-weight: 700 !important;
-        color: #F8FAFC !important;
+        color: #0f2024 !important;
         letter-spacing: -0.02em !important;
     }
-    
-    /* Header border line styling */
-    hr {
-        border-color: #1E293B !important;
-        margin: 20px 0 !important;
-    }
+    hr { border-color: #e2e6ea !important; margin: 24px 0 !important; }
+    p, li { color: #35383b !important; }
 
-    /* Custom Metric Cards Grid */
     .metric-card-container {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 20px;
-        margin: 20px 0 30px 0;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px; margin: 8px 0 28px 0;
     }
-
     .metric-card {
-        background: #151D30;
-        border: 1px solid #1E293B;
-        border-radius: 12px;
-        padding: 24px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        transition: transform 0.2s ease, border-color 0.2s ease;
+        background: #ffffff; border: 1px solid #e2e6ea;
+        border-radius: 10px; padding: 22px 24px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
     }
-
-    .metric-card:hover {
-        transform: translateY(-2px);
-        border-color: #3B82F6;
-    }
-
-    .metric-card.revenue {
-        border-left: 4px solid #10B981;
-    }
-    .metric-card.pending {
-        border-left: 4px solid #F59E0B;
-    }
-    .metric-card.orders {
-        border-left: 4px solid #3B82F6;
-    }
-    .metric-card.average {
-        border-left: 4px solid #8B5CF6;
-    }
-
+    .metric-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,90,106,0.12); }
+    .metric-card.revenue { border-top: 4px solid #10b981; }
+    .metric-card.pending { border-top: 4px solid #f39682; }
+    .metric-card.orders  { border-top: 4px solid #005a6a; }
+    .metric-card.average { border-top: 4px solid #6e969b; }
     .metric-label {
-        font-size: 12px;
-        font-weight: 700;
-        color: #94A3B8;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 8px;
+        font-size: 11px; font-weight: 700; color: #5a7380 !important;
+        text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;
     }
+    .metric-value { font-size: 28px; font-weight: 800; color: #0f2024 !important; letter-spacing: -0.02em; }
+    .metric-desc  { font-size: 11px; color: #5a7380 !important; margin-top: 6px; }
 
-    .metric-value {
-        font-size: 32px;
-        font-weight: 800;
-        color: #F8FAFC;
-        letter-spacing: -0.01em;
-    }
-
-    .metric-desc {
-        font-size: 11px;
-        color: #64748B;
-        margin-top: 6px;
-    }
-
-    /* Custom Attention Alerts Grid */
     .attention-card {
-        background: #151D30;
-        border: 1px solid #1E293B;
-        border-radius: 10px;
-        padding: 16px 20px;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        transition: border-color 0.2s ease;
+        background: #ffffff; border: 1px solid #e2e6ea; border-radius: 8px;
+        padding: 14px 18px; margin-bottom: 10px;
+        display: flex; align-items: center; justify-content: space-between;
+        transition: box-shadow 0.2s ease;
     }
-    
-    .attention-card:hover {
-        border-color: #334155;
-    }
+    .attention-card:hover { box-shadow: 0 2px 8px rgba(0,90,106,0.10); }
+    .attention-card.critical { border-left: 4px solid #ef4444; }
+    .attention-card.warning  { border-left: 4px solid #f39682; }
+    .attention-title    { font-weight: 600; color: #0f2024 !important; font-size: 13px; }
+    .attention-subtitle { color: #5a7380 !important; font-size: 11px; margin-top: 2px; }
+    .badge { padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+    .badge.urgent { background: #fee2e2; color: #b91c1c !important; }
+    .badge.low    { background: #fff3e0; color: #b45309 !important; }
 
-    .attention-card.critical {
-        border-left: 4px solid #EF4444;
-    }
-
-    .attention-card.warning {
-        border-left: 4px solid #F59E0B;
-    }
-
-    .attention-title {
-        font-weight: 600;
-        color: #F8FAFC;
-        font-size: 14px;
-    }
-
-    .attention-subtitle {
-        color: #94A3B8;
-        font-size: 12px;
-        margin-top: 3px;
-    }
-
-    .badge {
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-size: 10px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-
-    .badge.urgent {
-        background-color: rgba(239, 68, 68, 0.12);
-        color: #FCA5A5;
-        border: 1px solid rgba(239, 68, 68, 0.25);
-    }
-
-    .badge.low {
-        background-color: rgba(245, 158, 11, 0.12);
-        color: #FCD34D;
-        border: 1px solid rgba(245, 158, 11, 0.25);
-    }
-
-    /* Custom Receivables Row styling */
     .receivable-row {
-        background: #151D30;
-        border: 1px solid #1E293B;
-        border-radius: 8px;
-        padding: 14px 18px;
-        margin-bottom: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        transition: border-color 0.2s ease;
+        background: #ffffff; border: 1px solid #e2e6ea; border-radius: 8px;
+        padding: 14px 18px; margin-bottom: 8px;
+        display: flex; align-items: center; justify-content: space-between;
+        transition: box-shadow 0.2s;
     }
-    
-    .receivable-row:hover {
-        border-color: #334155;
-    }
+    .receivable-row:hover { box-shadow: 0 2px 8px rgba(0,90,106,0.10); }
+    .receivable-name    { font-weight: 600; color: #0f2024 !important; font-size: 13px; }
+    .receivable-balance { font-size: 13px; font-weight: 700; color: #0f2024 !important; font-family: monospace; }
 
-    .receivable-name {
-        font-weight: 600;
-        color: #F8FAFC;
-        font-size: 14px;
-    }
-
-    .receivable-balance {
-        font-family: monospace;
-        font-size: 14px;
-        font-weight: 700;
-        color: #F8FAFC;
-    }
-
-    /* Custom AI Report styling */
-    .report-container {
-        background: #0F172A;
-        border: 1px solid #1E293B;
-        border-radius: 12px;
-        padding: 24px;
-        margin-top: 15px;
-    }
-
-    .report-section {
-        border-bottom: 1px solid #1E293B;
-        padding-bottom: 20px;
-        margin-bottom: 20px;
-    }
-
-    .report-section:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
-        margin-bottom: 0;
-    }
-
-    /* Refine Streamlit native components (Buttons, Expanders, Info Banners) */
     div.stButton > button {
-        background-color: #3B82F6 !important;
-        color: #FFFFFF !important;
-        border-radius: 8px !important;
-        border: none !important;
-        font-weight: 600 !important;
-        padding: 12px 24px !important;
-        width: 100% !important;
+        background-color: #005a6a !important; color: #ffffff !important;
+        border-radius: 6px !important; border: none !important;
+        font-weight: 600 !important; padding: 10px 20px !important;
+        width: 100% !important; font-size: 13px !important;
+        font-family: 'Inter', sans-serif !important;
         transition: background-color 0.2s ease, transform 0.1s ease !important;
-        font-size: 14px !important;
     }
-    div.stButton > button:hover {
-        background-color: #2563EB !important;
-        transform: translateY(-1px);
-    }
-    div.stButton > button:active {
-        transform: translateY(0);
-    }
+    div.stButton > button:hover { background-color: #1d434c !important; transform: translateY(-1px); }
 
-    /* Expander card custom style rules */
     div[data-testid="stExpander"] {
-        background-color: #151D30 !important;
-        border: 1px solid #1E293B !important;
-        border-radius: 10px !important;
-        margin-bottom: 10px !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important;
+        background-color: #ffffff !important; border: 1px solid #e2e6ea !important;
+        border-radius: 8px !important; margin-bottom: 8px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
     }
-    div[data-testid="stExpander"] details {
-        border: none !important;
-    }
+    div[data-testid="stExpander"] details { border: none !important; }
     div[data-testid="stExpander"] summary {
-        background-color: #151D30 !important;
-        color: #F8FAFC !important;
-        font-weight: 600 !important;
-        border-radius: 10px !important;
-        font-size: 14px !important;
-        padding: 10px 16px !important;
+        background-color: #ffffff !important; color: #0f2024 !important;
+        font-weight: 600 !important; border-radius: 8px !important;
+        font-size: 13px !important; padding: 12px 16px !important;
+        font-family: 'Inter', sans-serif !important;
     }
-    div[data-testid="stExpander"] summary:hover {
-        color: #3B82F6 !important;
-    }
+    div[data-testid="stExpander"] summary:hover { color: #005a6a !important; }
     div[data-testid="stExpander"] div[data-testid="stMarkdownContainer"] p {
-        color: #E2E8F0 !important;
-        font-size: 13px !important;
+        color: #35383b !important; font-size: 13px !important;
     }
 
-    /* Customize Streamlit alerts / banners */
     div[data-testid="stAlert"] {
-        background-color: #151D30 !important;
-        border: 1px solid #1E293B !important;
-        border-radius: 10px !important;
-        color: #F8FAFC !important;
+        background-color: #e8f5f6 !important; border: 1px solid #b2d8dc !important;
+        border-radius: 8px !important;
     }
-    div[data-testid="stAlert"] p {
-        color: #E2E8F0 !important;
-        font-size: 13px !important;
-    }
+    div[data-testid="stAlert"] p { color: #0f2024 !important; font-size: 13px !important; }
 
-    /* Custom Chat bubbles */
     div[data-testid="stChatMessage"] {
-        background-color: #151D30 !important;
-        border: 1px solid #1E293B !important;
-        border-radius: 12px !important;
-        padding: 14px 18px !important;
-        margin-bottom: 12px !important;
-    }
-    div[data-testid="stChatMessage"][data-test-user="user"] {
-        background-color: #1E293B !important;
-        border-color: #3B82F630 !important;
+        background-color: #ffffff !important; border: 1px solid #e2e6ea !important;
+        border-radius: 10px !important; padding: 14px 18px !important;
+        margin-bottom: 10px !important; box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
     }
     div[data-testid="stChatMessage"] p {
-        color: #E2E8F0 !important;
-        font-size: 13px !important;
-        line-height: 1.5 !important;
+        color: #35383b !important; font-size: 13px !important; line-height: 1.6 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -294,12 +135,29 @@ data = get_dashboard_data()
 sales = data["sales_summary"]
 
 # ==================== HEADER ====================
-st.markdown("# 🏢 Aurora Office Furniture")
-st.markdown("<p style='color: #94A3B8; font-size: 16px; margin-top: -10px; margin-bottom: 24px;'>Enterprise Operations Control Dashboard & Intelligent AI Co-Pilot</p>", unsafe_allow_html=True)
+st.markdown("""
+<div style="background:#0f2024; padding:16px 24px; margin:-1rem -4rem 2rem -4rem; display:flex; align-items:center; justify-content:space-between; border-bottom:3px solid #005a6a;">
+  <div>
+    <span style="font-size:20px; font-weight:800; color:#ffffff; font-family:Inter,sans-serif; letter-spacing:-0.03em;">
+      aurora <span style="color:#f39682;">office furniture</span>
+    </span>
+    <span style="display:block; font-size:11px; color:#6e969b; letter-spacing:0.08em; text-transform:uppercase; margin-top:2px;">
+      AI Operations System &bull; Internal Dashboard
+    </span>
+  </div>
+  <div style="display:flex; gap:12px; align-items:center;">
+    <span style="background:#1d434c; color:#fff; font-size:10px; font-weight:700; padding:4px 12px; border-radius:20px; letter-spacing:0.06em; text-transform:uppercase;">Live ERP Data</span>
+    <span style="background:#f39682; color:#fff; font-size:10px; font-weight:700; padding:4px 12px; border-radius:20px; letter-spacing:0.06em; text-transform:uppercase;">AI Powered</span>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("## Operations Dashboard")
+st.markdown("<p style='color:#5a7380; font-size:14px; margin-top:-8px; margin-bottom:24px;'>Real-time Odoo ERP telemetry • Canberra, Sydney, Melbourne</p>", unsafe_allow_html=True)
 st.markdown("---")
 
 # ==================== FINANCIAL TELEMETRY ====================
-st.markdown("## 💰 Financial Telemetry")
+st.markdown("## Financial Overview")
 
 metrics_html = f"""
 <div class="metric-card-container">
@@ -433,8 +291,8 @@ st.markdown(receivables_html, unsafe_allow_html=True)
 st.markdown("---")
 
 # ==================== AI ANALYSIS REPORT ====================
-st.markdown("## 🤖 AI Business Advisor")
-st.markdown("Initiate a comprehensive business analysis audit. The AI agent will ingest financial and inventory tables to identify strategic risks and growth optimizations.")
+st.markdown("## AI Business Audit")
+st.markdown("<p style='color:#5a7380; font-size:13px; margin-top:-8px;'>Run a complete analysis of your Odoo ERP data to surface risks, priorities and growth opportunities.</p>", unsafe_allow_html=True)
 
 if st.button("🤖 Run AI Business Audit", type="primary"):
     with st.spinner("🔍 Executing AI business model diagnostics..."):
@@ -450,7 +308,7 @@ if "analysis" in st.session_state:
     analysis = st.session_state.analysis
     
     st.markdown("---")
-    st.markdown("## 📊 AI Recommendation Report")
+    st.markdown("## Business Intelligence Report")
     
     # Executive Summary
     if "executive_summary" in analysis:
@@ -484,8 +342,8 @@ if "analysis" in st.session_state:
 st.markdown("---")
 
 # ==================== CO-PILOT CHAT INTERFACE ====================
-st.markdown("## 💬 AI Co-Pilot Q&A")
-st.markdown("Query the active Odoo database or ask the assistant for workflow action items in natural language.")
+st.markdown("## AI Co-Pilot Q&A")
+st.markdown("<p style='color:#5a7380; font-size:13px; margin-top:-8px;'>Query your Odoo operations data or ask for actionable business guidance.</p>", unsafe_allow_html=True)
 
 # Initialize chat history
 if "chat_history" not in st.session_state:
@@ -512,7 +370,7 @@ if question := st.chat_input("Query: e.g., Which customers owe us the most money
         st.session_state.chat_history.append({"role": "assistant", "content": response})
 
 # Quick actions query buttons
-st.markdown("<p style='font-size: 13px; font-weight: 600; color: #94A3B8; margin-top: 15px;'>Quick Queries:</p>", unsafe_allow_html=True)
+st.markdown("<p style='font-size: 11px; font-weight: 700; color: #5a7380; margin-top: 16px; text-transform: uppercase; letter-spacing: 0.08em;'>Quick Queries</p>", unsafe_allow_html=True)
 
 def ask_quick_question(question):
     """Handle quick question button click"""
@@ -541,9 +399,18 @@ st.markdown("---")
 
 # ==================== FOOTER ====================
 st.markdown("""
-<div style="text-align: center; color: #64748B; padding: 20px 0 10px 0; font-size: 12px; border-top: 1px solid #1E293B;">
-    <p style="margin: 0; font-weight: 700; color: #94A3B8;">Aurora AI Operating System v1.0.0</p>
-    <p style="margin: 4px 0 0 0;">Engineered for Aurora Office Furniture (Aust) Pty Ltd</p>
-    <p style="margin: 2px 0 0 0;">Canberra • Sydney • Melbourne | Managing Director: Dean Grace</p>
+<div style="background:#0f2024; padding:24px 32px; margin:24px -4rem -4rem -4rem; text-align:center;">
+    <p style="margin:0; font-weight:800; color:#ffffff; font-family:Inter,sans-serif; font-size:16px; letter-spacing:-0.02em;">
+        aurora <span style="color:#f39682;">office furniture</span>
+    </p>
+    <p style="margin:6px 0 0 0; color:#6e969b; font-size:11px; letter-spacing:0.06em; text-transform:uppercase;">
+        Canberra &bull; Sydney &bull; Melbourne &bull; Est. 1993
+    </p>
+    <p style="margin:4px 0 0 0; color:#5a7380; font-size:11px;">
+        AI Operations System &mdash; Internal Use Only &mdash; Managing Director: Dean Grace
+    </p>
+    <p style="margin:8px 0 0 0; color:#3a5a63; font-size:10px;">
+        &copy; 2026 Aurora Office Furniture (Aust) Pty Ltd &bull; ABN 34 659 801 662
+    </p>
 </div>
 """, unsafe_allow_html=True)
