@@ -21,7 +21,7 @@ API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
 
 
-async def call_ai(prompt: str, system: str = "") -> str:
+async def call_ai(prompt: str, system: str = "", max_tokens: int = 2000) -> str:
     """Call MiMo/Anthropic API"""
     headers = {
         "x-api-key": API_KEY,
@@ -32,7 +32,7 @@ async def call_ai(prompt: str, system: str = "") -> str:
     messages = [{"role": "user", "content": prompt}]
     payload = {
         "model": MODEL,
-        "max_tokens": 2000,
+        "max_tokens": max_tokens,
         "messages": messages,
     }
     if system:
@@ -48,15 +48,7 @@ async def call_ai(prompt: str, system: str = "") -> str:
 async def analyze_business_data(data: Dict[str, Any]) -> Dict[str, Any]:
     """AI agent analyzes all business data and returns prioritized insights"""
 
-    system_prompt = """You are an AI business analyst for Aurora Office Furniture, an Australian office furniture company.
-
-Your job is to analyze business data and provide:
-1. TOP 5 PRIORITY ACTIONS (ranked by business impact)
-2. RISKS & ALERTS (things needing immediate attention)
-3. OPPORTUNITIES (revenue growth, cost savings)
-4. SUMMARY DASHBOARD (key metrics in plain English)
-
-Be specific, actionable, and use Australian dollars (AUD). Focus on practical next steps a business manager can take TODAY."""
+    system_prompt = "You are a business analyst. Return ONLY valid JSON. No markdown code blocks. No explanation. Just the JSON object."
 
     # Prepare data summary for AI
     sales = data["sales_summary"]
@@ -73,7 +65,7 @@ Be specific, actionable, and use Australian dollars (AUD). Focus on practical ne
 
     # Format alerts
     alert_text = "\n".join([
-        f"- [{a['severity']}] {a['type']}: {a['product']} {'(Stock: ' + str(a.get('current', 0)) + ')' if 'current' in a else ''}"
+        f"- [{a['severity']}] {a['type']}: {a['product']}"
         for a in alerts
     ])
 
@@ -83,66 +75,69 @@ Be specific, actionable, and use Australian dollars (AUD). Focus on practical ne
         for r in receivables[:5]
     ])
 
-    prompt = f"""ANALYZE THIS AURORA OFFICE FURNITURE BUSINESS DATA:
+    prompt = f"""Analyze this Aurora Office Furniture business data:
 
-=== SALES SUMMARY ===
-Total Revenue (Delivered): ${sales['total_revenue']:,.2f} AUD
-Pending Revenue: ${sales['pending_revenue']:,.2f} AUD
-Total Orders: {sales['total_orders']}
-Average Order Value: ${sales['avg_order_value']:,.2f} AUD
+SALES: Revenue ${sales['total_revenue']:,.0f}, Pending ${sales['pending_revenue']:,.0f}, Orders {sales['total_orders']}, Avg ${sales['avg_order_value']:,.0f}
 
-=== INVENTORY ALERTS ===
+INVENTORY ALERTS:
 {alert_text}
 
-=== PENDING ORDERS ===
+PENDING ORDERS:
 {order_text}
 
-=== ACCOUNTS RECEIVABLE ===
+RECEIVABLES:
 {recv_text}
 
-=== PRODUCTS ===
-Total SKUs: {len(data['products'])}
-Out of Stock: {len([p for p in data['products'] if p['stock'] == 0])}
-Low Stock: {len([p for p in data['products'] if 0 < p['stock'] < p['min_stock']])}
+PRODUCTS: {len(data['products'])} total, {len([p for p in data['products'] if p['stock'] == 0])} out of stock, {len([p for p in data['products'] if 0 < p['stock'] < p['min_stock']])} low stock
 
-Provide your analysis in this JSON format:
+Return this exact JSON structure:
 {{
-    "priority_actions": [
-        {{"rank": 1, "action": "...", "impact": "HIGH/MEDIUM/LOW", "effort": "...", "owner": "..."}},
-        ...
-    ],
-    "risks": [
-        {{"type": "...", "description": "...", "severity": "CRITICAL/HIGH/MEDIUM", "mitigation": "..."}},
-        ...
-    ],
-    "opportunities": [
-        {{"type": "...", "description": "...", "potential_value": "...", "timeline": "..."}},
-        ...
-    ],
-    "dashboard_metrics": {{
-        "revenue_status": "...",
-        "inventory_health": "...",
-        "cash_flow_risk": "...",
-        "customer_satisfaction": "..."
-    }},
-    "executive_summary": "2-3 sentence summary for the Managing Director"
+  "executive_summary": "2 sentence summary for Managing Director",
+  "priority_actions": [
+    {{"rank": 1, "action": "Action text", "impact": "HIGH", "effort": "Low/Medium/High", "owner": "Role"}}
+  ],
+  "risks": [
+    {{"type": "Risk type", "description": "Description", "severity": "HIGH", "mitigation": "How to fix"}}
+  ],
+  "opportunities": [
+    {{"type": "Opportunity", "description": "Description", "potential_value": "Value", "timeline": "Timeline"}}
+  ]
 }}"""
 
-    response = await call_ai(prompt, system_prompt)
+    response = await call_ai(prompt, system_prompt, max_tokens=4000)
 
     # Try to parse JSON from response
     try:
-        # Find JSON in response
-        start = response.find("{")
-        end = response.rfind("}") + 1
+        # Remove markdown code block if present
+        clean_response = response.strip()
+        if clean_response.startswith("```json"):
+            clean_response = clean_response[7:]
+        elif clean_response.startswith("```"):
+            clean_response = clean_response[3:]
+        if clean_response.endswith("```"):
+            clean_response = clean_response[:-3]
+        clean_response = clean_response.strip()
+
+        # Find JSON in response - try multiple approaches
+        # Approach 1: Find first { to last }
+        start = clean_response.find("{")
+        end = clean_response.rfind("}") + 1
         if start != -1 and end != -1:
-            return json.loads(response[start:end])
-    except json.JSONDecodeError:
+            json_str = clean_response[start:end]
+            try:
+                return json.loads(json_str)
+            except json.JSONDecodeError:
+                # Try fixing common JSON issues
+                # Remove trailing commas before } or ]
+                import re
+                json_str = re.sub(r',\s*([}\]])', r'\1', json_str)
+                return json.loads(json_str)
+    except (json.JSONDecodeError, Exception) as e:
         pass
 
     # Fallback: return raw text
     return {
-        "executive_summary": response,
+        "executive_summary": response[:500] if len(response) > 500 else response,
         "priority_actions": [],
         "risks": [],
         "opportunities": [],
